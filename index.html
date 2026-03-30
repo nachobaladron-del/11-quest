@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>11+ Quest — Kent GL Assessment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0F172A;font-family:'Nunito',sans-serif;}
+    @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes starPop{0%{transform:scale(0) rotate(-30deg);opacity:0;}70%{transform:scale(1.3) rotate(10deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+    .subj-card:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 24px rgba(0,0,0,0.4);}
+    .opt-btn:hover{background:#1E3A5F!important;border-color:#0EA5E9!important;color:#F1F5F9!important;transform:translateX(4px);}
+    .next-btn:hover{transform:scale(1.02);box-shadow:0 6px 28px rgba(139,92,246,0.4)!important;}
+    button{transition:all 0.15s ease;font-family:'Nunito',sans-serif;}
+    ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:#0F172A;} ::-webkit-scrollbar-thumb{background:#334155;border-radius:99px;}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const C = {
+  sky:"#0EA5E9", teal:"#14B8A6", amber:"#F59E0B", rose:"#F43F5E",
+  purple:"#8B5CF6", green:"#22C55E", navy:"#0F172A", ink:"#1E293B",
+  slate:"#64748B", cloud:"#F1F5F9", white:"#FFFFFF",
+};
+
+const SUBJECT_META = {
+  maths:     {label:"Maths",           emoji:"🔢",color:C.sky,   id:"maths"    },
+  english:   {label:"English",         emoji:"📚",color:C.rose,  id:"english"  },
+  verbal:    {label:"Verbal Reasoning",emoji:"🧠",color:C.purple,id:"verbal"   },
+  nonverbal: {label:"Non-Verbal",      emoji:"🔷",color:C.amber, id:"nonverbal"},
+};
+
+const WORD_BANK = [
+  {word:"Serene",   def:"calm and peaceful",          syn:["peaceful","tranquil","calm"],   ant:["chaotic","turbulent","agitated"]},
+  {word:"Peculiar", def:"strange or unusual",          syn:["odd","bizarre","strange"],      ant:["normal","ordinary","typical"]},
+  {word:"Valiant",  def:"showing courage and bravery", syn:["brave","courageous","bold"],    ant:["cowardly","timid","fearful"]},
+  {word:"Meticulous",def:"very careful and precise",  syn:["precise","thorough","careful"], ant:["careless","sloppy","hasty"]},
+  {word:"Gloomy",   def:"dark or sad feeling",         syn:["dismal","dreary","sullen"],     ant:["bright","cheerful","radiant"]},
+  {word:"Swiftly",  def:"very quickly",                syn:["rapidly","speedily","hastily"],ant:["slowly","sluggishly","leisurely"]},
+  {word:"Ancient",  def:"belonging to a very old time",syn:["old","historic","archaic"],    ant:["modern","contemporary","recent"]},
+  {word:"Cunning",  def:"clever in a sly way",         syn:["crafty","sly","wily"],         ant:["naive","honest","guileless"]},
+];
+
+const QUESTIONS = {
+  maths:[
+    {id:"m1",diff:1,q:"What is 7 × 8?",opts:["54","56","48","63"],ans:1,
+     wrongReasons:["You chose 54, which is actually 6×9, not 7×8. It's a neighbour in the times table — 6×9 and 7×8 are completely different calculations.",null,"You chose 48, which is actually 6×8. You had the 8 correct, but used 6 instead of 7. Being one times table off is a very common error — always check which row you're working in.","You chose 63, which is actually 7×9. You had the 7 correct, but used 9 instead of 8. It's easy to jump one step too far up the 7 times table."],
+     right:"The correct answer is 56. Count up in 7s: 7, 14, 21, 28, 35, 42, 49, 56 — that's exactly eight steps of 7. Memory trick: the numbers 5, 6, 7, 8 are in order — and 56 = 7×8. So five-six-seven-eight locks in 7×8=56 forever!"},
+    {id:"m2",diff:1,q:"What is ½ of 84?",opts:["42","44","40","46"],ans:0,
+     wrongReasons:[null,"You chose 44. Check: 44+44=88, not 84. Halving must split the number into two perfectly equal groups. Always double your answer to verify it gives back the original number.","You chose 40. That is half of 80, not half of 84. You halved only part of the number — you must halve the entire number including the units.","You chose 46. Check: 46+46=92, which is not 84. Always double your answer and see if you get back to the starting number."],
+     right:"The correct answer is 42. Break 84 into parts: half of 80=40, half of 4=2. Add them: 40+2=42. Check: 42×2=84 ✓. Splitting into tens and units makes halving much easier than doing it all at once."},
+    {id:"m3",diff:1,q:"Round 3,847 to the nearest hundred.",opts:["3,800","3,900","4,000","3,850"],ans:0,
+     wrongReasons:[null,"You chose 3,900, which means you rounded UP. But rounding up only happens when the tens digit is 5 or more. In 3,847, the tens digit is 4 — and 4 is less than 5, so we must round DOWN.","You chose 4,000, which is rounding to the nearest THOUSAND, not hundred. To round to the nearest hundred, look at the tens digit and keep the hundreds digit in your answer.","You chose 3,850, which still has a tens digit — so it hasn't been rounded at all. A properly rounded number to the nearest hundred always ends in 00."],
+     right:"The correct answer is 3,800. Golden rule: look at the TENS digit. In 3,847, the tens digit is 4. Because 4 is less than 5, we round down — hundreds digit stays as 8 and last two digits become 00. If the tens digit had been 5 or more, we would round up to 3,900."},
+    {id:"m4",diff:1,q:"A bag of apples costs £1.35. How much do 4 bags cost?",opts:["£5.40","£5.00","£5.20","£4.80"],ans:0,
+     wrongReasons:[null,"You chose £5.00, which comes from multiplying only the pounds (£1×4=£4) and ignoring the 35p. The 35p is real money — you must multiply the FULL amount by 4.","You chose £5.20, which comes from using 30p×4=£1.20 and adding to £4. But the price is 35p, not 30p. Every penny matters — 35p×4=140p=£1.40, not £1.20.","You chose £4.80, which uses £1.20×4. But the price is £1.35, not £1.20. Always re-read the price before multiplying."],
+     right:"The correct answer is £5.40. Split £1.35 into parts: £1×4=£4.00 and 35p×4=140p=£1.40. Add: £4.00+£1.40=£5.40. Always break money into pounds and pence, multiply each separately, then combine."},
+    {id:"m5",diff:1,q:"What is 25% of 80?",opts:["20","25","15","30"],ans:0,
+     wrongReasons:[null,"You chose 25 — the percentage number from the question itself, not the answer. This is one of the most common traps: copying the % as the answer. The question asks you to find 25% OF 80, which requires a calculation.","You chose 15, which would be 25% of 60, not 80. The method was probably right but you may have used the wrong starting number.","You chose 30, which would be 25% of 120. The number you divide must be 80 throughout."],
+     right:"The correct answer is 20. Key fact: 25% = one quarter = ¼. So 25% of any number means divide by 4. 80÷4=20. Or build it up: 10% of 80=8, then 25%=8+8+4=20. Whenever you see 25%, immediately think 'divide by 4'."},
+    {id:"m6",diff:1,q:"Which fraction is equivalent to 2/3?",opts:["4/9","6/9","4/6","8/9"],ans:1,
+     wrongReasons:["You chose 4/9. Check: 4÷9≠2÷3. To make an equivalent fraction, multiply BOTH top and bottom by the SAME number. If you multiply the top by 2 to get 4, you must multiply the bottom by 2 too, giving 4/6, not 4/9.",null,"You chose 4/6. Actually 4/6 does simplify to 2/3 — but 6/9 is the intended answer for this question. Both are technically correct, but 6/9 was the marked answer.","You chose 8/9. To get 8 from 2 you multiply by 4. But 3×4=12, not 9. Different multipliers for top and bottom always break the equivalence."],
+     right:"The correct answer is 6/9. Multiply BOTH numerator and denominator by the same number: 2×3=6 and 3×3=9, giving 6/9. Verify by simplifying: 6÷3=2 and 9÷3=3, which gives back 2/3 ✓. Same multiplier top and bottom — that's the rule."},
+    {id:"m7",diff:1,q:"A rectangle is 9 cm long and 5 cm wide. What is its perimeter?",opts:["28 cm","45 cm","14 cm","30 cm"],ans:0,
+     wrongReasons:[null,"You chose 45 cm, which is the AREA (9×5=45 cm²), not the perimeter. Area = inside space. Perimeter = outside edge. These are very frequently confused — always re-read the question to see which one is asked.","You chose 14 cm = 9+5. You added length and width but a rectangle has FOUR sides. You only counted one of each, missing the other two sides entirely.","You chose 30 cm. The correct method is to add all four sides: 9+9+5+5=28, not 30."],
+     right:"The correct answer is 28 cm. Perimeter = total distance around the outside. Method: add all four sides: 9+9+5+5=28 cm. Or: 2×(length+width)=2×(9+5)=2×14=28 cm. Key rule: perimeter = walking around the border; area = painting the surface."},
+    {id:"m8",diff:1,q:"What is the value of the digit 6 in 4,628?",opts:["6","60","600","6,000"],ans:2,
+     wrongReasons:["You chose 6, which would only be correct if the 6 were in the units column (the rightmost digit). In 4,628 the units digit is 8, not 6.","You chose 60, which would be correct if 6 were in the tens column. In 4,628 the tens column holds the digit 2, not 6.",null,"You chose 6,000, which would be correct if 6 were in the thousands column. In 4,628, the thousands column holds the digit 4."],
+     right:"The correct answer is 600. In 4,628: 8=units, 2=tens(=20), 6=hundreds(=600), 4=thousands(=4,000). The 6 sits in the hundreds column, so its value is 6×100=600. Place value is entirely about position — the same digit in a different column has a completely different value."},
+    {id:"m9",diff:2,q:"A train departs at 08:47 and arrives at 11:15. How long is the journey?",opts:["2h 28min","2h 38min","3h 28min","2h 18min"],ans:0,
+     wrongReasons:[null,"You chose 2h 38min. This likely comes from subtracting 47 from 15 directly — but you can't subtract time like normal numbers (60 minutes in an hour, not 100). This gives 10 extra minutes in your answer.","You chose 3h 28min, which is one full hour too long. Check your counting of whole hours between departure and arrival.","You chose 2h 18min — 10 minutes short. A small counting error in the minutes: from 08:47 to 09:00 is 13 minutes, not 3 minutes."],
+     right:"The correct answer is 2h 28min. Never subtract times directly — count in jumps. 08:47→09:00=13 minutes. 09:00→11:00=2 hours. 11:00→11:15=15 minutes. Total: 2 hours + 13min + 15min = 2h 28min. The 'jump to the next hour' method avoids all borrowing errors."},
+    {id:"m10",diff:2,q:"If 3x + 7 = 22, what is x?",opts:["5","4","6","7"],ans:0,
+     wrongReasons:[null,"You chose x=4. Check: 3×4+7=12+7=19. The equation needs 22, but x=4 gives 19 — too small by 3. You may have divided by 4 instead of 3 in the final step.","You chose x=6. Check: 3×6+7=18+7=25. Too large by 3. You might have added 7 to 22 instead of subtracting it.","You chose x=7. Check: 3×7+7=21+7=28. Far too large. This would only work if the equation were 3x+7=28."],
+     right:"The correct answer is x=5. Solve by working backwards. 3x+7=22 → subtract 7 from both sides: 3x=15 → divide both sides by 3: x=5. Always verify: 3×5+7=15+7=22 ✓. Checking your answer takes 5 seconds and catches every mistake."},
+    {id:"m11",diff:2,q:"What is 15% of 240?",opts:["36","38","32","34"],ans:0,
+     wrongReasons:[null,"You chose 38. You likely found 10%=24 correctly, but then found 5% as 14 instead of 12. Half of 24 is 12, not 14. Double-check your halving step.","You chose 32. This might come from a small error when finding 10% or 5% of 240. Ensure you start from 240 each time.","You chose 34 — only 2 away. Likely a small addition error at the end when combining 10% and 5%."],
+     right:"The correct answer is 36. Break 15% into chunks: 10% of 240=24. 5% of 240=12 (half of 10%). Add: 24+12=36. Always build percentages from 10% and 5% building blocks — it works for any percentage."},
+    {id:"m12",diff:2,q:"A shop reduces a £60 jacket by 30%. What is the new price?",opts:["£42","£48","£30","£45"],ans:0,
+     wrongReasons:[null,"You chose £48 = £60−£12. You subtracted 20% (£12) instead of 30% (£18). One extra 10% (£6) was missing from your discount.","You chose £30 = half of £60. You subtracted 50% instead of 30%. The discount is 30%, which is much less than half price.","You chose £45 = £60−£15. You subtracted 25% (£15) instead of 30% (£18). The question clearly states 30%."],
+     right:"The correct answer is £42. Step 1: find 30% of £60. 10% of £60=£6, so 30%=3×£6=£18. Step 2: subtract the discount: £60−£18=£42. Key: the question asks for the NEW PRICE after reduction, not the discount amount. Always finish by subtracting from the original."},
+  ],
+  english:[
+    {id:"e1",diff:1,q:"Which word is spelled correctly?",opts:["Seperate","Separate","Sepurate","Separete"],ans:1,
+     wrongReasons:["You chose 'Seperate'. The error is in the middle — you wrote an 'e' where an 'a' should be. The correct spelling has two 'a' sounds: sep-A-r-A-te. The middle is '-ara-', not '-ere-'. This is the most common spelling mistake in English.",null,"You chose 'Sepurate'. There is no 'u' in this word at all. The vowels in 'separate' are: e-a-a-e. No 'u' anywhere.","You chose 'Separete'. You got the first half right but the ending is wrong. The word ends in '-ate', not '-ete'. Think of the word 'rate' hidden inside: separ-ATE."],
+     right:"The correct spelling is 'Separate'. Memory trick: there is a RAT hiding in the middle — sep-A-RAT-e. If you can see the rat, you'll never misspell it again. The two 'a's in 'sepARAte' are the letters most people get wrong."},
+    {id:"e2",diff:1,q:"Choose the correct word: 'She ___ to the shop yesterday.'",opts:["goed","goes","went","go"],ans:2,
+     wrongReasons:["You chose 'goed', which does not exist in English. It looks logical — adding '-ed' like 'walked' or 'jumped' — but 'go' is an irregular verb. You cannot make 'go' past tense by adding '-ed'.","You chose 'goes', which is present tense: 'She goes every Saturday.' But 'yesterday' tells us the action is already finished — it happened in the past. 'Goes' describes something happening now, not something already done.",null,"You chose 'go', the base form of the verb, used for present tense: 'They go to the shop.' But 'she' with 'yesterday' needs past tense."],
+     right:"The correct answer is 'went'. 'Yesterday' is a past-tense signal. The verb 'go' is irregular — instead of adding '-ed', it changes shape completely: go→went. Other irregular verbs: run→ran, see→saw, eat→ate, come→came. These must be memorised as they don't follow regular rules."},
+    {id:"e3",diff:1,q:"Which sentence uses a simile?",opts:["The lion roared.","She was as brave as a lion.","The brave lion leapt.","Lions are fierce."],ans:1,
+     wrongReasons:["You chose 'The lion roared.' This is a simple factual sentence — it just tells us what the lion did. There is no comparison to anything else. A simile must compare two different things.",null,"You chose 'The brave lion leapt.' The word 'brave' describes the lion, but no comparison is being made to anything else. Describing something is not the same as comparing it.","You chose 'Lions are fierce.' This is a statement of fact. Nothing is being compared to anything. A simile needs two things being compared, connected by 'as' or 'like'."],
+     right:"The correct answer is 'She was as brave as a lion.' A simile directly compares two things using 'as' or 'like'. Here, the girl's bravery is compared to a lion's bravery using 'as...as'. Structure: [thing 1] + as + [quality] + as + [thing 2]. Whenever you see 'as...as' or 'like' making a comparison, that is a simile."},
+    {id:"e4",diff:1,q:"What is the plural of 'knife'?",opts:["Knifes","Knives","Knifes","Kniefs"],ans:1,
+     wrongReasons:["You chose 'Knifes', formed by simply adding 's'. This works for regular nouns like 'cats' and 'dogs'. But 'knife' ends in '-fe', and these words follow a special rule — the 'fe' must transform first.",null,"You chose 'Knifes' again — same issue. Adding '-s' directly to a word ending in '-fe' breaks the spelling rule.","You chose 'Kniefs', which moves letters around incorrectly. The root 'kni-' must stay intact. Only the ending changes."],
+     right:"The correct answer is 'Knives'. Spelling rule: words ending in '-fe' change that ending to '-ves' in the plural. Remove '-fe', add '-ves': kni+ves=knives. Same rule: life→lives, leaf→leaves, half→halves, wolf→wolves. Learn this rule — it comes up regularly in 11+ spelling."},
+    {id:"e5",diff:1,q:"Which word is a synonym for 'enormous'?",opts:["Tiny","Gigantic","Average","Slight"],ans:1,
+     wrongReasons:["You chose 'Tiny', which is the direct OPPOSITE of enormous — an antonym, not a synonym. Tiny=very small, enormous=very large. They are at completely opposite ends of the size scale.",null,"You chose 'Average', which means medium-sized — neither big nor small. Enormous means extremely large. Average is in the middle, which is as far as possible from the extreme size that 'enormous' describes.","You chose 'Slight', which means very small or thin — the opposite end of the scale from enormous. This is another antonym of enormous."],
+     right:"The correct answer is 'Gigantic'. A synonym has the same or very similar meaning. Enormous=extremely large. Gigantic also=extremely large — like a giant. Other synonyms: huge, colossal, immense, vast, mammoth. Building a vocabulary bank around key words is brilliant 11+ preparation."},
+    {id:"e6",diff:1,q:"Find the odd one out: quickly, slowly, bravely, happy",opts:["quickly","slowly","bravely","happy"],ans:3,
+     wrongReasons:["You chose 'quickly', but quickly is an adverb — it describes HOW an action is done ('she ran quickly'). It belongs with the other adverbs. Adverbs typically end in '-ly' and answer 'how?'.","You chose 'slowly', but slowly is also an adverb describing how ('he moved slowly'). It ends in '-ly' and answers 'how?', just like quickly and bravely.","You chose 'bravely', but bravely is also an adverb ('they fought bravely'). It ends in '-ly' and answers 'how?'. It belongs with quickly and slowly.",null],
+     right:"The odd one out is 'happy'. Happy is an adjective — it describes a noun: 'the happy child'. The other three (quickly, slowly, bravely) are all adverbs — they describe verbs by answering 'how?'. To turn happy into an adverb you'd need 'happily'. The '-ly' ending is your clue that something is an adverb."},
+    {id:"e7",diff:1,q:"Which word completes the proverb? 'Every cloud has a silver ___.'",opts:["lining","edge","border","seam"],ans:0,
+     wrongReasons:[null,"You chose 'edge'. A reasonable guess — an edge is the outer part of something. But 'Every cloud has a silver edge' is not the real proverb. Proverbs are fixed traditional expressions — only the exact original wording is correct.","You chose 'border'. Like edge, a border describes the outer limit. But 'Every cloud has a silver border' is not a real proverb. The specific word matters — it cannot be swapped for a similar one.","You chose 'seam'. A seam joins two pieces of fabric. But 'silver seam' is not how this proverb goes. The image in the proverb is of a LINING — the inside layer — not an outer join."],
+     right:"The correct answer is 'lining'. Full proverb: 'Every cloud has a silver lining.' The lining is the inner layer of a coat or jacket. The image: even the darkest cloud has a bright silver glow inside. Meaning: there is always something positive inside a difficult situation. This fixed expression must be learned word for word."},
+    {id:"e8",diff:1,q:"What does the prefix 'mis-' mean in 'misunderstand'?",opts:["again","wrongly","before","after"],ans:1,
+     wrongReasons:["You chose 'again', which is the prefix 're-': redo, replay, return. Misunderstand does not mean 'understand again' — it means to understand incorrectly.",null,"You chose 'before', which is the prefix 'pre-': preview, prehistoric. Misunderstand does not mean 'understand before'.","You chose 'after', which is the prefix 'post-': postpone, postwar. Misunderstand does not mean 'understand after'. Think what 'misunderstanding' feels like — getting something wrong, not doing it at a different time."],
+     right:"The correct answer is 'wrongly'. The prefix 'mis-' means badly, wrongly, or incorrectly. Mis-understand=understand wrongly. Other examples: mis-take, mis-lead, mis-spell, mis-behave. Knowing 'mis-'=wrongly instantly unlocks the meaning of dozens of unfamiliar words."},
+    {id:"e9",diff:2,q:"'The boy, exhausted after the race, collapsed onto the grass.' What does 'exhausted' mean?",opts:["Excited","Completely tired","Very hungry","Extremely happy"],ans:1,
+     wrongReasons:["You chose 'Excited'. But look at what the boy does — he collapses. People collapse from exhaustion, not excitement. Excitement gives energy and alertness, not weakness. The sentence describes a physical collapse, which contradicts excitement.",null,"You chose 'Very hungry'. People don't typically collapse immediately after a race from hunger. Also, 'after the race' tells us the cause is the physical effort of racing, not lack of food.","You chose 'Extremely happy'. Happiness does not cause physical collapse. The boy's body gave out — that is a sign of having no energy left, not of feeling happy."],
+     right:"The correct answer is 'Completely tired'. Use context clues: the boy just finished a race (intense physical effort) AND he collapsed (body gave out from no energy). Even without knowing the word 'exhausted', the sentence tells you everything. In the 11+, always read the whole sentence carefully before choosing — the clues are always there."},
+    {id:"e10",diff:2,q:"Which sentence uses a semicolon correctly?",opts:["She loves reading; and writing.","It was cold; she wore a coat.","He ran; quickly.","The cat sat; on the mat."],ans:1,
+     wrongReasons:["You chose 'She loves reading; and writing.' This is wrong because 'and' already joins the two parts — you don't need a semicolon as well. Also, 'and writing' cannot stand alone as a sentence.",null,"You chose 'He ran; quickly.' Wrong — 'quickly' is not a complete sentence. A semicolon requires a full sentence on BOTH sides. 'Quickly' alone cannot stand as a sentence.","You chose 'The cat sat; on the mat.' Wrong — 'on the mat' cannot stand alone as a sentence."],
+     right:"The correct answer is 'It was cold; she wore a coat.' A semicolon (;) joins TWO COMPLETE SENTENCES that are closely related. Test: 'It was cold' — complete ✓. 'She wore a coat' — complete ✓. They are related (cold weather→warm coat). Both sides pass the test, so the semicolon is correct."},
+    {id:"e11",diff:2,q:"What literary device is: 'The wind whispered through the trees.'",opts:["Simile","Alliteration","Personification","Metaphor"],ans:2,
+     wrongReasons:["You chose Simile. But there is no 'as' or 'like' comparison here. A simile compares two things directly using those words.","You chose Alliteration. Alliteration requires several words starting with the same letter ('wild wind whistled'). Only 'wind' and 'whispered' begin the same — not enough for alliteration, and the main device here is something else.",null,"You chose Metaphor. A metaphor says one thing IS another ('the wind is a whisper'). This sentence doesn't do that — it says the wind whispered, giving it a human action."],
+     right:"The correct answer is Personification. Personification gives a non-human thing a human quality or action. Whispering is something only humans can do — the wind cannot literally whisper. By saying the wind whispered, the writer gives the wind a human characteristic. Look for animals, weather, or objects doing things only humans can do — that's personification."},
+    {id:"e12",diff:2,q:"Choose the most precise word: 'The old woman walked ___ down the street.'",opts:["nicely","quickly","shuffled","moved"],ans:2,
+     wrongReasons:["You chose 'nicely'. This is too vague — it tells us almost nothing about HOW she walked. Good writing uses specific words that create a clear picture, not vague words like 'nicely'.","You chose 'quickly'. This is a generic adverb that doesn't paint a specific picture of an elderly person. An old woman walking quickly is possible but lacks the precision that good writing demands.",null,"You chose 'moved'. This is the least specific of all — everything moves. It tells the reader nothing distinctive about how the woman walked."],
+     right:"The correct answer is 'shuffled'. Notice it's a VERB, not an adverb — it replaces 'walked' and describes how she moved at the same time. To shuffle means to walk slowly, dragging feet slightly, with small steps — exactly how you'd picture an elderly woman. One precise verb is worth ten vague adverbs. 'She shuffled' instantly creates a clear picture in the reader's mind."},
+  ],
+  verbal:[
+    {id:"v1",diff:1,q:"Move ONE letter from the first word to make two new words:\n'PLANT' → 'ACE'",opts:["P → LANT, PACE","L → PANT, LACE","A → PLNT, AACE","T → PLAN, TACE"],ans:1,
+     wrongReasons:["You chose P→LANT, PACE. LANT is not a real English word. PACE is real, but the first word LANT fails.",null,"You chose A→PLNT, AACE. PLNT has four consonants with no vowel — definitely not a word. Both new words must be genuine English words.","You chose T→PLAN, TACE. PLAN is a real word ✓, but TACE is not a common English word ✗."],
+     right:"The correct answer is L→PANT, LACE. Remove L from PLANT→PANT (what you do when out of breath ✓). Move that L into ACE→LACE (a delicate fabric ✓). Method: try removing each letter one at a time. Check if what's left is a real word. Then check if that letter in the second word also makes a real word. BOTH must work."},
+    {id:"v2",diff:1,q:"If COLD is coded as FROG (C→F, O→R, L→O, D→G), what is the code for BOLD?",opts:["EROG","EROL","FROL","ERQG"],ans:0,
+     wrongReasons:[null,"You chose EROL. The last letter is wrong: D should become G (D is 4th letter, +3=7th=G), not L. One wrong letter makes the whole code incorrect.","You chose FROL. The first letter is wrong: B should become E (B is 2nd letter, +3=5th=E), not F. F is what C maps to, not B.","You chose ERQG. The third letter is wrong: L should become O (L is 12th letter, +3=15th=O), not Q."],
+     right:"The correct answer is EROG. The rule: each letter shifts forward 3 places. B(2nd)+3=E(5th), O(15th)+3=R(18th), L(12th)+3=O(15th), D(4th)+3=G(7th). Result: EROG. Always verify the rule from the given example before applying it to the new word."},
+    {id:"v3",diff:1,q:"Find the word that means both: 'a fruit' AND 'to mark with a time/date'",opts:["Plum","Tap","Date","Strike"],ans:2,
+     wrongReasons:["You chose Plum — only a fruit. It has no second meaning that fits 'to mark with a time or date'.","You chose Tap — means to hit lightly (a verb), but is not a fruit. It only fits one meaning.",null,"You chose Strike — can mean to hit or remove something, but is not a fruit. It only fits one meaning."],
+     right:"The correct answer is 'Date'. A date is a sweet brown fruit ✓. To 'date' something means to write a date on it, or to assign it to a time ✓. Both meanings work perfectly. In the 11+, when a question asks for a word fitting TWO meanings, test your answer against BOTH clues before choosing."},
+    {id:"v4",diff:1,q:"Which word completes both sentences?\n'She plays ___ the piano.' / '___ my opinion, he was right.'",opts:["with","in","at","on"],ans:0,
+     wrongReasons:[null,"You chose 'in'. 'In my opinion' is correct ✓, but 'she plays in the piano' makes no sense ✗. It must work in BOTH sentences.","You chose 'at'. 'At my opinion' is not correct English — you say 'in my opinion', not 'at my opinion' ✗.","You chose 'on'. 'On my opinion' is grammatically wrong in English ✗."],
+     right:"The correct answer is 'with'. 'She plays WITH the piano' ✓ and 'WITH my opinion...' — testing each option in both sentences is the method. Say each sentence aloud; your ear often tells you when something sounds right or wrong. The word must fit naturally in BOTH blanks."},
+    {id:"v5",diff:1,q:"Find the hidden 4-letter animal: SCANT EATER",opts:["EATER","CANT","ANTE","ANT"],ans:2,
+     wrongReasons:["You chose EATER — 5 letters, and it's part of the second word itself, not hidden across the boundary between words.","You chose CANT — 4 letters, but CANT is not an animal. It means a slant or insincere talk.",null,"You chose ANT — only 3 letters, and the question asks for a 4-letter animal."],
+     right:"The correct answer is ANTE. Look across the word boundary: sc-ANTE-ater. The hidden 4-letter sequence spanning both words is ANTE. In these questions, always look at where two words meet — the hidden word almost always spans that gap between them."},
+    {id:"v6",diff:1,q:"Complete the sequence: B D F H ___",opts:["I","J","K","L"],ans:1,
+     wrongReasons:["You chose I, which is the very next letter after H — a gap of only 1. But the pattern has been jumping by 2 each time, not 1.",null,"You chose K, which jumps 3 letters from H (skipping I and J). Too big a jump — the pattern has been +2 throughout.","You chose L, which jumps 4 letters from H. Even larger than the pattern allows."],
+     right:"The correct answer is J. The rule: every other letter. B, D, F, H — each letter jumps +2: B+2=D, D+2=F, F+2=H, H+2=J. Letter sequences always have a consistent rule — find it and apply it."},
+    {id:"v7",diff:1,q:"CRANE is to BIRD as SALMON is to ___",opts:["River","Fish","Swim","Scale"],ans:1,
+     wrongReasons:["You chose River — where a salmon lives. But a crane doesn't 'belong to' a sky. The relationship isn't about habitat.",null,"You chose Swim — what a salmon does. But a crane doesn't 'do' bird. The relationship isn't about actions.","You chose Scale — part of a salmon. But a crane isn't a part of a bird — a crane IS a bird. The relationship type matters."],
+     right:"The correct answer is Fish. The relationship: 'A crane is a TYPE OF bird.' So we need: 'A salmon is a TYPE OF ___.' A salmon is a type of fish ✓. This is a category/classification analogy. Always identify the EXACT relationship in the first pair, then find the word that creates the SAME relationship with the second pair."},
+    {id:"v8",diff:1,q:"Which word is the odd one out? SPRINT · DASH · MARCH · RACE",opts:["SPRINT","DASH","MARCH","RACE"],ans:2,
+     wrongReasons:["You chose SPRINT. Sprint means to run very fast — it belongs with the other fast-movement words.",null,"You chose DASH. Dash means to run very fast — it belongs with the group.","You chose RACE. Race means to run fast against someone — it belongs with the group."],
+     right:"The odd one out is MARCH. March means to walk in a steady, rhythmic, military style — it is NOT about running or speed. Sprint, Dash, and Race all describe fast running. March is the only word describing a form of WALKING. Even though all four involve movement, three are about fast running and one is about walking — that one is the odd one out."},
+    {id:"v9",diff:2,q:"If the code for RAIN is 18-1-9-14, what is the code for SNOW?",opts:["19-14-15-23","19-14-14-22","18-13-14-22","20-13-15-23"],ans:0,
+     wrongReasons:[null,"You chose 19-14-14-22. The third number is wrong: O is the 15th letter, not the 14th. One wrong number makes the whole code incorrect.","You chose 18-13-14-22. The first number is wrong: S is the 19th letter, not the 18th (that's R). Check: R=18, S=19.","You chose 20-13-15-23. The first number is wrong: S=19, not 20 (T=20). And N=14, not 13."],
+     right:"The correct answer is 19-14-15-23. Rule: each letter = its position in the alphabet (A=1...Z=26). Verify with RAIN: R=18✓,A=1✓,I=9✓,N=14✓. Apply to SNOW: S=19, N=14, O=15, W=23. Result: 19-14-15-23. Landmark tip: A=1, E=5, J=10, O=15, T=20, Z=26. Count from the nearest landmark."},
+    {id:"v10",diff:2,q:"Move ONE letter from the first word to the second:\n'STALE' → 'POT'",opts:["S → TALE, SPOT","T → SALE, TPOT","A → STLE, APOT","L → STATE, LPOT"],ans:0,
+     wrongReasons:[null,"You chose T→SALE, TPOT. SALE is a real word ✓ but TPOT is not a real word ✗. Both results must be genuine English words.","You chose A→STLE, APOT. STLE is not a real word ✗.","You chose L→STATE, LPOT. STALE minus L = STAE, not STATE. And LPOT is not a word ✗."],
+     right:"The correct answer is S→TALE, SPOT. Remove S from STALE→TALE (a story ✓). Put S into POT→SPOT (a place ✓). Both are genuine English words. The golden rule: verify BOTH new words are real. If either one fails, that answer is wrong."},
+    {id:"v11",diff:2,q:"In a code, MATHS = PDWKV. What is LOGIC?",opts:["ORJLF","NQHJB","ORJLC","NPIFD"],ans:0,
+     wrongReasons:[null,"You chose NQHJB. This applies a shift of +1 instead of +3. The rule from the example is clearly +3.","You chose ORJLC. The first four letters are correct (ORJL) but the last is wrong: C in LOGIC should code to F (C=3rd letter, +3=6th=F), not C.","You chose NPIFD. This applies an inconsistent shift. Always find the rule precisely from the given example before applying it."],
+     right:"The correct answer is ORJLF. Find the rule from MATHS=PDWKV: M→P(+3), A→D(+3), T→W(+3), H→K(+3), S→V(+3). Rule: add 3. Apply to LOGIC: L(12)+3=O, O(15)+3=R, G(7)+3=J, I(9)+3=L, C(3)+3=F. Result: ORJLF. Always decode the example first — the rule is always hidden there."},
+    {id:"v12",diff:2,q:"Fill the gap: ACE · EGI · IKM · ___",opts:["MOP","MOQ","NOP","MNO"],ans:1,
+     wrongReasons:["You chose MOP. M and O are correct but P is wrong — the third letter should be Q (skipping P, just as earlier groups skipped letters).","You chose MOQ — this IS the correct answer! See the explanation below.","You chose NOP. The starting letter is wrong: each group starts where the last ended (A→E→I→M), so the next group must start with M not N.","You chose MNO. These are consecutive letters — no skipping. But the pattern skips a letter within each group."],
+     right:"The correct answer is MOQ. Two rules at work: (1) each group starts where the last ended: A→E→I→M. (2) Within each group, letters skip one: A_C_E, E_G_I, I_K_M → M_O_Q. From M: skip N, take O, skip P, take Q → MOQ. These double-rule sequences are the hardest type — spot both rules!"},
+  ],
+  nonverbal:[
+    {id:"n1",diff:1,q:"How many sides does a hexagon have?",opts:["5","6","7","8"],ans:1,
+     wrongReasons:["You chose 5 — that is a pentagon (think of the Pentagon building). Pent=5.",null,"You chose 7 — that is a heptagon. Hept=7.","You chose 8 — that is an octagon (think of a stop sign or an octopus with 8 arms). Oct=8."],
+     right:"The correct answer is 6. The prefix 'hex-' comes from Greek and means six. Memory trick: think of a honeycomb — every cell in a beehive is a perfect hexagon! Prefixes: tri=3, quad=4, pent=5, hex=6, hept=7, oct=8. Learn these and you'll never confuse shape names again."},
+    {id:"n2",diff:1,q:"A square is rotated 45°. What does it look like?",opts:["Still a square","A diamond/rhombus shape","A circle","A triangle"],ans:1,
+     wrongReasons:["You chose 'Still a square'. It IS still technically a square, but the question asks what it LOOKS LIKE visually. When tilted onto its corner it looks completely different, even though nothing about the shape itself has changed.",null,"You chose 'A circle'. Rotation never changes straight sides into curves. The sides remain perfectly straight.","You chose 'A triangle'. Rotation never removes sides. The shape still has all 4 sides."],
+     right:"The correct answer is 'A diamond/rhombus shape'. When you rotate a square 45°, it tilts onto one corner and looks like a diamond. The shape hasn't changed (still 4 equal sides and 4 right angles) but visually it looks like a diamond. Important NVR concept: shapes can look very different when rotated — a square and a diamond shape can be exactly the same shape."},
+    {id:"n3",diff:1,q:"Which shape has the MOST lines of symmetry?",opts:["Equilateral triangle (3)","Square (4)","Regular hexagon (6)","Circle (∞)"],ans:3,
+     wrongReasons:["You chose the equilateral triangle with exactly 3 lines of symmetry (one through each vertex). This is a fixed finite number, not the most.","You chose the square with exactly 4 lines of symmetry. Fixed and finite — not the most.","You chose the regular hexagon with exactly 6 lines of symmetry. The most of these options excluding the circle, but still finite.",null],
+     right:"The correct answer is Circle (∞ — infinite). A line of symmetry divides a shape into two mirror-image halves. For a circle, you can draw a line through the centre at ANY angle and both halves are always perfect mirrors. Since there are infinitely many possible angles, a circle has infinitely many lines of symmetry. No other 2D shape comes close."},
+    {id:"n4",diff:1,q:"Pattern: ▲ ● ■ ▲ ● ■ ▲ ___ What comes next?",opts:["▲","●","■","◆"],ans:1,
+     wrongReasons:["You chose ▲. A new ▲ would come after the ● and ■ complete this cycle — it's position 10 in the sequence, not position 8.","You chose ● — this IS correct! See the explanation below.","You chose ■. The ■ would come AFTER the correct answer — it's the 9th shape, not the 8th.","You chose ◆ (diamond). This shape does not appear in the pattern at all — never choose a shape that isn't in the original sequence."],
+     right:"The correct answer is ●. The sequence repeats a 3-shape cycle: ▲,●,■,▲,●,■... Positions: 1=▲, 2=●, 3=■, 4=▲, 5=●, 6=■, 7=▲, 8=?. Position 8: after ▲ comes ●. Method: identify the cycle length (3), then 8÷3=2 remainder 2, so it's the 2nd shape in the cycle = ●."},
+    {id:"n5",diff:1,q:"A cube has 6 faces. How many EDGES does it have?",opts:["8","10","12","16"],ans:2,
+     wrongReasons:["You chose 8, which is the number of VERTICES (corners) of a cube, not edges. Faces, edges and vertices are three different things.",null,"You chose 10 — this doesn't correspond to any standard cube measurement.","You chose 16 — also not a standard cube measurement."],
+     right:"The correct answer is 12. A cube has: 6 faces (flat surfaces), 8 vertices (corners), 12 edges (lines where faces meet). To count edges: 4 across the top + 4 across the bottom + 4 vertical sides = 12. Memory rule: Faces=6, Vertices=8, Edges=12. Euler's formula: F+V-E=2 → 6+8-12=2 ✓."},
+    {id:"n6",diff:1,q:"How many small triangles in a larger triangle with 4 rows?\n(Row 1:1, Row 2:3, Row 3:5, Row 4:7)",opts:["10","14","16","20"],ans:2,
+     wrongReasons:["You chose 10 = 1+2+3+4. That would be correct if each row added one triangle — but the rows here add 1, 3, 5, and 7 triangles.","You chose 14 = 1+3+5+5, adding the wrong amount for row 4. Row 4 has 7, not 5.",null,"You chose 20 — too many. The question gives you the exact amounts for each row."],
+     right:"The correct answer is 16. The question tells you exactly: Row 1=1, Row 2=3, Row 3=5, Row 4=7. Add: 1+3+5+7=16. Also a beautiful pattern: the sum of the first n odd numbers always equals n². Here n=4 rows, and 4²=16 ✓."},
+    {id:"n7",diff:1,q:"Fold square paper in half twice, cut a corner triangle — how many holes when unfolded?",opts:["1","2","3","4"],ans:3,
+     wrongReasons:["You chose 1 hole. That would happen if you cut from the open (non-folded) edges — but cutting from the folded corner goes through all layers.","You chose 2 holes. That would happen if you only folded once (2 layers). You folded TWICE, giving 4 layers.","You chose 3 holes. Folding always doubles layers, giving even numbers. 3 holes is not possible from folding.",null],
+     right:"The correct answer is 4 holes. First fold: 2 layers. Second fold: 4 layers. Cutting through 4 layers creates 4 holes when unfolded, arranged symmetrically. Rule: holes = layers at the point of cutting = 2^(number of folds) = 2²=4."},
+    {id:"n8",diff:1,q:"Which is a valid NET of a cube?\nA:T-shape(6sq)  B:2×3 grid  C:L-shape(5sq)  D:Plus sign(6sq)",opts:["A","B","C","D"],ans:3,
+     wrongReasons:["You chose A, the T-shape. Some T-shapes work as cube nets and some don't — this particular one doesn't fold correctly.","You chose B, the 2×3 grid. When folded, opposite faces overlap — it cannot make a valid cube.","You chose C, the L-shape. It has only 5 squares — a cube needs exactly 6 faces, so 5 squares can never be a cube net.",null],
+     right:"The correct answer is D, the Plus/cross sign (+). A cube net is 6 squares that fold into a cube with no overlaps and no gaps. The plus sign: the centre square = one face, four surrounding squares fold up = four side faces, top square folds over = the top. There are 11 valid cube nets in total. Use paper and scissors to test them!"},
+    {id:"n9",diff:2,q:"Sequence: sm.circle→med.circle→lg.circle→sm.square→med.square→lg.square→sm.triangle→___",opts:["Large triangle","Medium triangle","Small circle","Medium circle"],ans:1,
+     wrongReasons:["You chose Large triangle — that would skip the medium size. The pattern has never skipped a size: it always goes small→medium→large.",null,"You chose Small circle — starting a new shape cycle before completing the triangle. We've only had small triangle so far; the triangle cycle isn't finished.","You chose Medium circle — restarting AND skipping the rest of the triangle cycle. Both rules would be broken."],
+     right:"The correct answer is Medium triangle. Two simultaneous rules: (1) SHAPE cycles in groups of 3: circle×3, square×3, triangle×3. (2) SIZE cycles: small, medium, large, repeating. Position 8: shape=triangle (positions 7,8,9 are all triangles), size=small(7)→medium(8)→large(9). Answer: Medium triangle."},
+    {id:"n10",diff:2,q:"A 4×4 grid has the top-left 2×2 shaded. What fraction is shaded?",opts:["1/4","1/2","3/4","1/8"],ans:0,
+     wrongReasons:[null,"You chose 1/2. That would require 8 shaded squares out of 16, or the whole top two rows shaded. A 2×2 region is only 4 squares, not 8.","You chose 3/4. That would mean 12 squares shaded — nearly all of the grid. A 2×2 region is far less than that.","You chose 1/8. That would mean only 2 squares shaded. A 2×2 region has 4 squares, not 2."],
+     right:"The correct answer is 1/4. Steps: total squares in 4×4 grid = 16. Shaded 2×2 region = 4 squares. Fraction = 4/16. Simplify: 4÷4=1, 16÷4=4 → 1/4. Always simplify fractions to their lowest terms."},
+    {id:"n11",diff:2,q:"Rectangle 8cm×5cm cut into 4 equal smaller rectangles. Dimensions of each?",opts:["4×5 cm","8×2.5 cm","4×2.5 cm","2×5 cm"],ans:2,
+     wrongReasons:["You chose 4×5 cm. Cutting 8÷2=4 but leaving 5 unchanged only creates 2 rectangles, not 4.","You chose 8×2.5 cm. Cutting 5÷2=2.5 but leaving 8 unchanged also only creates 2 rectangles, not 4.",null,"You chose 2×5 cm. Cutting 8÷4=2 gives 4 strips lengthwise, but these aren't equal rectangles in both dimensions."],
+     right:"The correct answer is 4×2.5 cm. To cut into 4 EQUAL pieces, cut in half in BOTH directions: length 8÷2=4 cm, width 5÷2=2.5 cm. Each piece = 4×2.5 cm. Check: 4 pieces × (4×2.5) = 4×10 = 40 cm² = original area (8×5=40 cm²) ✓."},
+    {id:"n12",diff:2,q:"Matrix Row1:○○ ○□ ○△ | Row2:□○ □□ □△ | Row3:△○ △□ ___ What fills the gap?",opts:["△△","○△","□○","△○"],ans:0,
+     wrongReasons:[null,"You chose ○△ — putting a circle first. But in row 3, every cell starts with △ (triangle). The row rule says the first shape must be △.","You chose □○ — putting a square first. That belongs in row 2, where all cells start with □.","You chose △○ — the first shape △ is correct (row rule ✓), but the second shape ○ is wrong. Column 3 cells all end with △, not ○."],
+     right:"The correct answer is △△. Two rules: (1) FIRST shape = row shape. Row 1→○, Row 2→□, Row 3→△. (2) SECOND shape = column shape. Col 1→○, Col 2→□, Col 3→△. Missing cell is Row 3, Col 3: first=△ (row), second=△ (column) → △△."},
+  ],
+};
+
+const SHOP = [
+  {id:"pet1",name:"Dragon",   emoji:"🐉",cost:100,type:"pet"},
+  {id:"pet2",name:"Unicorn",  emoji:"🦄",cost:80, type:"pet"},
+  {id:"pet3",name:"Robot",    emoji:"🤖",cost:60, type:"pet"},
+  {id:"pet4",name:"Owl",      emoji:"🦉",cost:40, type:"pet"},
+  {id:"hat1",name:"Wizard",   emoji:"🧙",cost:50, type:"avatar"},
+  {id:"hat2",name:"Crown",    emoji:"👑",cost:120,type:"avatar"},
+  {id:"hat3",name:"Rocket",   emoji:"🚀",cost:70, type:"avatar"},
+  {id:"b1",  name:"Star",     emoji:"⭐",cost:30, type:"badge"},
+  {id:"b2",  name:"Fire",     emoji:"🔥",cost:30, type:"badge"},
+  {id:"b3",  name:"Brain",    emoji:"🧠",cost:50, type:"badge"},
+];
+
+const LEVELS = [
+  {min:0,  label:"Starter",  badge:"🌱",color:"#22C55E"},
+  {min:60, label:"Explorer", badge:"🔭",color:"#0EA5E9"},
+  {min:150,label:"Scholar",  badge:"📖",color:"#8B5CF6"},
+  {min:300,label:"Champion", badge:"🏆",color:"#F59E0B"},
+  {min:500,label:"Genius",   badge:"🌟",color:"#F43F5E"},
+];
+
+function getLevel(xp){for(let i=LEVELS.length-1;i>=0;i--)if(xp>=LEVELS[i].min)return LEVELS[i];return LEVELS[0];}
+function getNextLevel(xp){for(let i=0;i<LEVELS.length;i++)if(xp<LEVELS[i].min)return LEVELS[i];return null;}
+
+function buildMission(subjectId,perfMap){
+  const pool=QUESTIONS[subjectId];
+  const m=perfMap[subjectId]||{correct:0,total:0};
+  const acc=m.total>0?m.correct/m.total:0.5;
+  const stretch=acc>=0.7;
+  const f=pool.filter(q=>q.diff===1);
+  const s=pool.filter(q=>q.diff===2);
+  const sh=arr=>[...arr].sort(()=>Math.random()-0.5);
+  const chosen=stretch?[...sh(f).slice(0,5),...sh(s).slice(0,1)]:sh(f).slice(0,6);
+  return sh(chosen).slice(0,6);
+}
+
+function getTodayWord(){const d=new Date();return WORD_BANK[(d.getDate()+d.getMonth())%WORD_BANK.length];}
+
+function Confetti({active}){
+  if(!active)return null;
+  const cols=[C.sky,C.teal,C.amber,C.rose,C.purple,C.green];
+  return React.createElement('div',{style:{position:"fixed",inset:0,pointerEvents:"none",zIndex:9999,overflow:"hidden"}},
+    Array.from({length:40}).map((_,i)=>React.createElement('div',{key:i,style:{
+      position:"absolute",left:`${Math.random()*100}%`,top:"-30px",
+      width:`${6+Math.random()*8}px`,height:`${6+Math.random()*8}px`,
+      borderRadius:Math.random()>0.5?"50%":"2px",background:cols[i%cols.length],
+      animation:`fall ${1.2+Math.random()*1.2}s ease ${Math.random()*0.6}s forwards`,
+    }}))
+  );
+}
+
+function XPBar({xp}){
+  const cur=getLevel(xp),nxt=getNextLevel(xp);
+  const pct=nxt?Math.round(((xp-cur.min)/(nxt.min-cur.min))*100):100;
+  return(
+    <div style={{background:"#1E293B",borderRadius:16,padding:"10px 16px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+        <span style={{color:"#94A3B8",fontSize:12,fontWeight:700}}>{cur.badge} {cur.label}</span>
+        <span style={{color:C.amber,fontSize:13,fontWeight:800}}>✨ {xp} BP</span>
+      </div>
+      <div style={{background:"#334155",borderRadius:99,height:10,overflow:"hidden"}}>
+        <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${cur.color},${C.amber})`,borderRadius:99,transition:"width 0.8s ease"}}/>
+      </div>
+      {nxt&&<div style={{fontSize:11,color:"#64748B",textAlign:"right",marginTop:3}}>{nxt.min-xp} BP to {nxt.badge} {nxt.label}</div>}
+    </div>
+  );
+}
+
+function WordCard({word}){
+  return(
+    <div style={{background:"linear-gradient(135deg,#0EA5E9,#8B5CF6)",borderRadius:20,padding:24,color:"#fff",marginBottom:20}}>
+      <div style={{fontSize:11,letterSpacing:2,fontWeight:700,opacity:0.8,marginBottom:4}}>📖 WORD OF THE DAY</div>
+      <div style={{fontSize:28,fontFamily:"'Fredoka One'",marginBottom:4}}>{word.word}</div>
+      <div style={{fontSize:14,opacity:0.9,marginBottom:12}}>{word.def}</div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+        <div style={{background:"rgba(255,255,255,0.2)",borderRadius:10,padding:"6px 12px",fontSize:12,fontWeight:700}}>Synonyms: {word.syn.join(", ")}</div>
+        <div style={{background:"rgba(255,255,255,0.2)",borderRadius:10,padding:"6px 12px",fontSize:12,fontWeight:700}}>Antonyms: {word.ant.join(", ")}</div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [screen,setScreen]=useState("home");
+  const [subjectId,setSubjectId]=useState(null);
+  const [mission,setMission]=useState([]);
+  const [qIdx,setQIdx]=useState(0);
+  const [selected,setSelected]=useState(null);
+  const [correct,setCorrect]=useState(0);
+  const [earned,setEarned]=useState(0);
+  const [confetti,setConfetti]=useState(false);
+  const [totalBP,setTotalBP]=useState(()=>{ try{return parseInt(localStorage.getItem("bp")||"0");}catch{return 0;} });
+  const [streak,setStreak]=useState(()=>{ try{return parseInt(localStorage.getItem("streak")||"0");}catch{return 0;} });
+  const [owned,setOwned]=useState(()=>{ try{return JSON.parse(localStorage.getItem("owned")||"[]");}catch{return [];} });
+  const [equipped,setEquipped]=useState(()=>{ try{return JSON.parse(localStorage.getItem("equipped")||'{"pet":null,"hat":null,"badge":null}');}catch{return {pet:null,hat:null,badge:null};} });
+  const [perfMap,setPerfMap]=useState(()=>{ try{return JSON.parse(localStorage.getItem("perf")||'{"maths":{"correct":0,"total":0},"english":{"correct":0,"total":0},"verbal":{"correct":0,"total":0},"nonverbal":{"correct":0,"total":0}}');}catch{return {maths:{correct:0,total:0},english:{correct:0,total:0},verbal:{correct:0,total:0},nonverbal:{correct:0,total:0}};} });
+
+  useEffect(()=>{ try{localStorage.setItem("bp",totalBP);}catch{} },[totalBP]);
+  useEffect(()=>{ try{localStorage.setItem("streak",streak);}catch{} },[streak]);
+  useEffect(()=>{ try{localStorage.setItem("owned",JSON.stringify(owned));}catch{} },[owned]);
+  useEffect(()=>{ try{localStorage.setItem("equipped",JSON.stringify(equipped));}catch{} },[equipped]);
+  useEffect(()=>{ try{localStorage.setItem("perf",JSON.stringify(perfMap));}catch{} },[perfMap]);
+
+  useEffect(()=>{
+    try{
+      const today=new Date().toDateString();
+      const last=localStorage.getItem("lastDate");
+      if(last!==today){
+        const yest=new Date();yest.setDate(yest.getDate()-1);
+        if(last===yest.toDateString())setStreak(s=>s+1);
+        else if(last!==null)setStreak(1);
+        localStorage.setItem("lastDate",today);
+      }
+    }catch{}
+  },[]);
+
+  const todayWord=getTodayWord();
+  const level=getLevel(totalBP);
+  const sub=SUBJECT_META[subjectId]||{};
+  const q=mission[qIdx];
+
+  function startMission(id){
+    setSubjectId(id);setMission(buildMission(id,perfMap));
+    setQIdx(0);setSelected(null);setCorrect(0);setEarned(0);setScreen("mission");
+  }
+
+  function handleSelect(idx){
+    if(selected!==null)return;
+    setSelected(idx);
+    const ok=idx===q.ans;
+    const pts=ok?(q.diff===2?20:10):0;
+    if(ok){setCorrect(c=>c+1);setEarned(e=>e+pts+(streak>=3?5:0));}
+  }
+
+  function nextQ(){
+    const ok=selected===q?.ans;
+    if(qIdx+1>=mission.length){
+      const fc=correct+(ok?1:0);
+      const fe=earned+(ok?(q.diff===2?20:10):0);
+      setTotalBP(b=>b+fe);
+      setPerfMap(prev=>({...prev,[subjectId]:{correct:prev[subjectId].correct+fc,total:prev[subjectId].total+mission.length}}));
+      if(fc===mission.length){setConfetti(true);setTimeout(()=>setConfetti(false),3000);}
+      setScreen("result");
+    }else{setQIdx(i=>i+1);setSelected(null);}
+  }
+
+  function buyItem(item){if(totalBP<item.cost||owned.includes(item.id))return;setTotalBP(b=>b-item.cost);setOwned(o=>[...o,item.id]);}
+  function equip(item){setEquipped(e=>({...e,[item.type]:item.id}));}
+
+  const page={minHeight:"100vh",background:"linear-gradient(160deg,#0F172A 0%,#1E293B 60%,#0F3460 100%)",padding:"0 0 60px"};
+  const wrap={maxWidth:480,margin:"0 auto",padding:"0 16px"};
+  const card=(col="#0EA5E9")=>({background:"#1E293B",border:`2px solid ${col}33`,borderRadius:20,padding:20,marginBottom:16});
+
+  // ── HOME ──
+  if(screen==="home"){
+    const petItem=SHOP.find(s=>s.id===equipped.pet);
+    const hatItem=SHOP.find(s=>s.id===equipped.hat);
+    return(
+      <div style={page}>
+        <div style={wrap}>
+          <div style={{paddingTop:28,paddingBottom:8,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div>
+              <h1 style={{fontFamily:"'Fredoka One'",fontSize:32,color:"#fff",margin:0,lineHeight:1}}>11+ Quest 🚀</h1>
+              <p style={{color:"#64748B",fontSize:13,margin:"4px 0 0",fontWeight:600}}>Kent GL Assessment Prep</p>
+            </div>
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:32}}>{petItem?.emoji||"🐾"}{hatItem?.emoji||""}</div>
+              <div style={{fontSize:10,color:level.color,fontWeight:800}}>{level.badge} {level.label}</div>
+            </div>
+          </div>
+          {streak>0&&<div style={{background:"linear-gradient(90deg,#F59E0B22,#F43F5E22)",border:"1px solid #F59E0B44",borderRadius:12,padding:"8px 14px",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:20}}>🔥</span>
+            <span style={{color:C.amber,fontWeight:800,fontSize:14}}>{streak}-day streak!</span>
+            {streak>=3&&<span style={{color:"#F43F5E",fontSize:12,fontWeight:700}}>+5 bonus BP!</span>}
+          </div>}
+          <div style={{marginBottom:16}}><XPBar xp={totalBP}/></div>
+          <WordCard word={todayWord}/>
+          <div style={{display:"flex",gap:8,marginBottom:18}}>
+            {["shop","stats"].map(s=>(
+              <button key={s} onClick={()=>setScreen(s)} style={{flex:1,background:"#1E293B",border:"1px solid #334155",borderRadius:12,color:"#94A3B8",fontWeight:700,fontSize:13,padding:"8px 0",cursor:"pointer"}}>
+                {s==="shop"?"🛒 Shop":"📊 My Stats"}
+              </button>
+            ))}
+          </div>
+          <p style={{color:"#475569",fontSize:12,fontWeight:800,letterSpacing:1.5,margin:"0 0 10px"}}>CHOOSE TODAY'S MISSION</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            {Object.values(SUBJECT_META).map(s=>{
+              const pm=perfMap[s.id];
+              const acc=pm.total>0?Math.round((pm.correct/pm.total)*100):null;
+              return(
+                <button key={s.id} onClick={()=>startMission(s.id)} className="subj-card" style={{background:"#1E293B",border:`2px solid ${s.color}55`,borderRadius:18,padding:16,cursor:"pointer",textAlign:"left",position:"relative",transition:"all 0.2s"}}>
+                  <div style={{fontSize:28,marginBottom:4}}>{s.emoji}</div>
+                  <div style={{fontFamily:"'Fredoka One'",color:s.color,fontSize:16}}>{s.label}</div>
+                  {acc!==null&&<>
+                    <div style={{background:"#0F172A",borderRadius:99,height:5,marginTop:8,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${acc}%`,background:s.color,borderRadius:99}}/>
+                    </div>
+                    <div style={{fontSize:11,color:"#64748B",marginTop:3,fontWeight:700}}>{acc}% accuracy</div>
+                  </>}
+                  {acc!==null&&acc>=70&&<div style={{position:"absolute",top:8,right:8,background:C.amber,color:"#fff",fontSize:9,borderRadius:99,padding:"2px 6px",fontWeight:800}}>STRETCH</div>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── MISSION ──
+  if(screen==="mission"&&q){
+    const isCorrect=selected===q.ans;
+    const progress=(qIdx/mission.length)*100;
+    const isStretch=q.diff===2;
+    const wrongReason=selected!==null&&!isCorrect&&q.wrongReasons?q.wrongReasons[selected]:null;
+
+    return(
+      <div style={page}>
+        <Confetti active={confetti}/>
+        <div style={wrap}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 0 14px"}}>
+            <button onClick={()=>setScreen("home")} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontWeight:700,fontSize:14}}>← Exit</button>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              {isStretch&&<span style={{background:C.amber,color:"#fff",fontSize:10,borderRadius:99,padding:"3px 8px",fontWeight:800}}>⚡ STRETCH</span>}
+              <span style={{color:sub.color,fontWeight:800,fontSize:14}}>{sub.emoji} {sub.label}</span>
+            </div>
+            <span style={{color:C.amber,fontWeight:800,fontSize:14}}>✨{earned}</span>
+          </div>
+
+          <div style={{background:"#1E293B",borderRadius:99,height:8,marginBottom:20,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${progress}%`,background:`linear-gradient(90deg,${sub.color},${C.amber})`,borderRadius:99,transition:"width 0.4s"}}/>
+          </div>
+
+          <div style={{...card(sub.color),borderWidth:2}}>
+            <div style={{color:"#475569",fontSize:12,fontWeight:700,marginBottom:10}}>Question {qIdx+1} of {mission.length}</div>
+            <p style={{color:"#F1F5F9",fontSize:17,fontWeight:700,lineHeight:1.5,whiteSpace:"pre-line",margin:"0 0 16px"}}>{q.q}</p>
+
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {q.opts.map((opt,i)=>{
+                let bg="#0F172A",border="#334155",color="#CBD5E1";
+                if(selected!==null){
+                  if(i===q.ans){bg="#14532D";border=C.green;color="#86EFAC";}
+                  else if(i===selected){bg="#450A0A";border=C.rose;color="#FCA5A5";}
+                }
+                return(
+                  <button key={i} onClick={()=>handleSelect(i)} disabled={selected!==null} className={selected===null?"opt-btn":""} style={{background:bg,border:`2px solid ${border}`,borderRadius:14,padding:"12px 16px",color,fontWeight:700,fontSize:15,textAlign:"left",cursor:selected!==null?"default":"pointer",transition:"all 0.15s",display:"flex",alignItems:"center",gap:10}}>
+                    <span style={{width:26,height:26,borderRadius:8,background:border+"33",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,flexShrink:0,color:border}}>{["A","B","C","D"][i]}</span>
+                    {opt}
+                    {selected!==null&&i===q.ans&&<span style={{marginLeft:"auto"}}>✅</span>}
+                    {selected!==null&&i===selected&&i!==q.ans&&<span style={{marginLeft:"auto"}}>❌</span>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Correct feedback */}
+            {selected!==null&&isCorrect&&(
+              <div style={{marginTop:14,padding:"14px 16px",borderRadius:14,background:"#14532D33",border:`2px solid ${C.green}66`,animation:"fadeUp 0.3s ease"}}>
+                <p style={{color:C.green,fontWeight:800,fontSize:16,margin:"0 0 2px"}}>🎉 Brilliant! That's correct!</p>
+                {isStretch&&<p style={{color:C.amber,fontSize:13,fontWeight:700,margin:0}}>⚡ Stretch question — bonus +20 BP!</p>}
+              </div>
+            )}
+
+            {/* Wrong feedback — two panels */}
+            {selected!==null&&!isCorrect&&(
+              <div style={{marginTop:14,borderRadius:16,overflow:"hidden",border:`2px solid ${C.rose}55`,animation:"fadeUp 0.35s ease"}}>
+                {/* Panel 1: Why YOUR answer is wrong */}
+                <div style={{background:"#2D0A0A",padding:"14px 16px",borderBottom:"1px solid #7F1D1D44"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                    <span style={{fontSize:18}}>❌</span>
+                    <span style={{color:C.rose,fontWeight:800,fontSize:13,letterSpacing:0.5}}>YOU CHOSE: {q.opts[selected]}</span>
+                  </div>
+                  <p style={{color:"#FCA5A5",fontSize:14,lineHeight:1.7,margin:0,fontWeight:600}}>
+                    {wrongReason||"This answer is incorrect — see the explanation below for the full reasoning."}
+                  </p>
+                </div>
+                {/* Panel 2: Why the correct answer IS correct */}
+                <div style={{background:"#0A2D1A",padding:"14px 16px",borderBottom:"1px solid #14532D44"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                    <span style={{fontSize:18}}>✅</span>
+                    <span style={{color:C.green,fontWeight:800,fontSize:13,letterSpacing:0.5}}>CORRECT ANSWER: {q.opts[q.ans]}</span>
+                  </div>
+                  <p style={{color:"#86EFAC",fontSize:14,lineHeight:1.7,margin:0,fontWeight:600}}>{q.right}</p>
+                </div>
+                {/* Encouragement */}
+                <div style={{background:"#1E293B",padding:"10px 16px",display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:16}}>💪</span>
+                  <p style={{color:"#64748B",fontSize:12,fontWeight:700,margin:0}}>Every mistake is a step closer to getting it right. Keep going!</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {selected!==null&&(
+            <button onClick={nextQ} className="next-btn" style={{width:"100%",background:`linear-gradient(90deg,${sub.color},${C.purple})`,border:"none",borderRadius:16,padding:"15px 0",color:"#fff",fontFamily:"'Fredoka One'",fontSize:20,cursor:"pointer",boxShadow:`0 4px 20px ${sub.color}55`}}>
+              {qIdx+1>=mission.length?"🏁 Finish Mission!":"Next Question →"}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── RESULT ──
+  if(screen==="result"){
+    const total=mission.length;
+    const pct=Math.round((correct/total)*100);
+    return(
+      <div style={page}>
+        <Confetti active={confetti}/>
+        <div style={wrap}>
+          <div style={{textAlign:"center",padding:"40px 0 20px"}}>
+            <div style={{fontSize:72}}>{correct===total?"🏆":pct>=60?"⭐":"💪"}</div>
+            <h2 style={{fontFamily:"'Fredoka One'",color:"#fff",fontSize:30,margin:"8px 0 4px"}}>{correct===total?"Perfect Mission!":pct>=60?"Great Work!":"Keep Practising!"}</h2>
+            <p style={{color:"#64748B",fontSize:14,margin:0}}>{sub.emoji} {sub.label} Mission Complete</p>
+          </div>
+          <div style={{...card(),textAlign:"center"}}>
+            <div style={{display:"flex",justifyContent:"space-around",marginBottom:16}}>
+              <div><div style={{fontFamily:"'Fredoka One'",fontSize:36,color:C.green}}>{correct}/{total}</div><div style={{color:"#64748B",fontSize:12,fontWeight:700}}>Correct</div></div>
+              <div><div style={{fontFamily:"'Fredoka One'",fontSize:36,color:C.amber}}>+{earned}</div><div style={{color:"#64748B",fontSize:12,fontWeight:700}}>Brain Points</div></div>
+              <div><div style={{fontFamily:"'Fredoka One'",fontSize:36,color:sub.color}}>{pct}%</div><div style={{color:"#64748B",fontSize:12,fontWeight:700}}>Accuracy</div></div>
+            </div>
+            <div style={{background:"#0F172A",borderRadius:99,height:10,overflow:"hidden",marginBottom:8}}>
+              <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${sub.color},${C.green})`,borderRadius:99}}/>
+            </div>
+            {pct>=70&&<div style={{background:`${C.amber}22`,border:`1px solid ${C.amber}44`,borderRadius:12,padding:10,marginTop:12}}>
+              <p style={{color:C.amber,fontWeight:800,margin:0,fontSize:14}}>⚡ Over 70%! Stretch questions unlocked for next mission!</p>
+            </div>}
+            {pct<50&&<div style={{background:`${C.sky}22`,border:`1px solid ${C.sky}44`,borderRadius:12,padding:10,marginTop:12}}>
+              <p style={{color:"#7DD3FC",fontWeight:700,margin:0,fontSize:13}}>💡 The app will give you more foundation questions to build your confidence!</p>
+            </div>}
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={()=>startMission(subjectId)} style={{flex:1,background:`linear-gradient(90deg,${sub.color},${C.purple})`,border:"none",borderRadius:14,padding:14,color:"#fff",fontFamily:"'Fredoka One'",fontSize:17,cursor:"pointer"}}>🔄 Retry</button>
+            <button onClick={()=>setScreen("home")} style={{flex:1,background:"#1E293B",border:"1px solid #334155",borderRadius:14,padding:14,color:"#94A3B8",fontWeight:800,fontSize:15,cursor:"pointer"}}>🏠 Home</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── SHOP ──
+  if(screen==="shop"){
+    return(
+      <div style={page}>
+        <div style={wrap}>
+          <div style={{padding:"20px 0 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <button onClick={()=>setScreen("home")} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontWeight:700,fontSize:14}}>← Back</button>
+            <h2 style={{fontFamily:"'Fredoka One'",color:"#fff",margin:0}}>🛒 Brain Shop</h2>
+            <span style={{color:C.amber,fontWeight:800,fontSize:14}}>✨{totalBP} BP</span>
+          </div>
+          {["pet","avatar","badge"].map(type=>(
+            <div key={type}>
+              <p style={{color:"#475569",fontSize:12,fontWeight:800,letterSpacing:1.5,margin:"16px 0 8px"}}>{type==="pet"?"🐾 PETS":type==="avatar"?"🎭 AVATAR":"🏅 BADGES"}</p>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                {SHOP.filter(s=>s.type===type).map(item=>{
+                  const isOwned=owned.includes(item.id);
+                  const isEquip=equipped[item.type]===item.id;
+                  const canBuy=totalBP>=item.cost;
+                  return(
+                    <div key={item.id} style={{background:isEquip?"#1E3A5F":"#1E293B",border:`2px solid ${isEquip?C.sky:isOwned?"#334155":"#1E293B"}`,borderRadius:16,padding:"14px 10px",textAlign:"center"}}>
+                      <div style={{fontSize:32,marginBottom:4}}>{item.emoji}</div>
+                      <div style={{color:"#F1F5F9",fontWeight:800,fontSize:12,marginBottom:6}}>{item.name}</div>
+                      {!isOwned?(
+                        <button onClick={()=>buyItem(item)} disabled={!canBuy} style={{background:canBuy?`linear-gradient(90deg,${C.amber},${C.rose})`:"#334155",border:"none",borderRadius:99,padding:"5px 10px",color:canBuy?"#fff":"#64748B",fontWeight:800,fontSize:11,cursor:canBuy?"pointer":"default"}}>✨{item.cost}</button>
+                      ):(
+                        <button onClick={()=>equip(item)} style={{background:isEquip?C.sky:"#334155",border:"none",borderRadius:99,padding:"5px 10px",color:"#fff",fontWeight:800,fontSize:11,cursor:"pointer"}}>{isEquip?"✅ On":"Equip"}</button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── STATS ──
+  if(screen==="stats"){
+    return(
+      <div style={page}>
+        <div style={wrap}>
+          <div style={{padding:"20px 0 10px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <button onClick={()=>setScreen("home")} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontWeight:700,fontSize:14}}>← Back</button>
+            <h2 style={{fontFamily:"'Fredoka One'",color:"#fff",margin:0}}>📊 My Stats</h2>
+            <span style={{color:C.amber,fontWeight:800,fontSize:14}}>🔥{streak}</span>
+          </div>
+          <div style={{marginBottom:16}}><XPBar xp={totalBP}/></div>
+          {Object.values(SUBJECT_META).map(s=>{
+            const pm=perfMap[s.id];
+            const acc=pm.total>0?Math.round((pm.correct/pm.total)*100):0;
+            return(
+              <div key={s.id} style={{...card(s.color),marginBottom:12}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <span style={{fontSize:24}}>{s.emoji}</span>
+                    <div>
+                      <div style={{fontFamily:"'Fredoka One'",color:s.color,fontSize:16}}>{s.label}</div>
+                      <div style={{color:"#64748B",fontSize:11,fontWeight:700}}>{pm.correct}/{pm.total} correct</div>
+                    </div>
+                  </div>
+                  <div style={{background:acc>=70?`${C.amber}33`:`${C.sky}22`,color:acc>=70?C.amber:"#7DD3FC",fontSize:11,fontWeight:800,borderRadius:99,padding:"3px 10px"}}>{acc>=70?"⚡ Stretch":"Foundation"}</div>
+                </div>
+                <div style={{background:"#0F172A",borderRadius:99,height:8,overflow:"hidden"}}>
+                  <div style={{height:"100%",width:`${acc}%`,background:`linear-gradient(90deg,${s.color},${C.green})`,borderRadius:99}}/>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+                  <span style={{color:"#475569",fontSize:11}}>0%</span>
+                  <span style={{color:s.color,fontSize:12,fontWeight:800}}>{acc}% accuracy</span>
+                  <span style={{color:"#475569",fontSize:11}}>100%</span>
+                </div>
+                {pm.total===0&&<p style={{color:"#475569",fontSize:12,textAlign:"center",margin:"8px 0 0"}}>No missions yet — start practising!</p>}
+              </div>
+            );
+          })}
+          <div style={{...card(),textAlign:"center"}}>
+            <div style={{color:"#64748B",fontSize:12,fontWeight:700,marginBottom:8}}>THE 80/20 ENGINE</div>
+            <p style={{color:"#94A3B8",fontSize:13,lineHeight:1.6,margin:0}}>
+              When accuracy reaches <span style={{color:C.amber,fontWeight:800}}>70%+</span> in a subject, the app automatically introduces <span style={{color:"#F43F5E",fontWeight:800}}>⚡ Stretch</span> questions (20%) alongside foundation work (80%) — just like the real Kent 11+ GL Assessment!
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
